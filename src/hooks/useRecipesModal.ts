@@ -1,0 +1,147 @@
+import { useState } from "react";
+
+export interface Recipe {
+  id: number;
+  name: string;
+  cuisine: string;
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+  image: string;
+}
+
+interface RecipeForm {
+  name: string;
+  cuisine: string;
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+}
+
+export const useRecipesModal = () => {
+  const [recipesList, setRecipesList] = useState<Recipe[]>([]);
+
+  const getRecipes = async () => {
+    try {
+      const res = await fetch(
+        "https://dummyjson.com/recipes"
+      );
+
+      const data = await res.json();
+
+      const recipes: Recipe[] = data.recipes.map(
+        (recipe: any) => ({
+          id: recipe.id,
+          name: recipe.name,
+          cuisine: recipe.cuisine,
+          prepTimeMinutes: recipe.prepTimeMinutes,
+          cookTimeMinutes: recipe.cookTimeMinutes,
+          image: recipe.image,
+        })
+      );
+
+      setRecipesList(recipes);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const addRecipe = async (
+    recipeData: RecipeForm
+  ) => {
+    try {
+      const res = await fetch(
+        "https://dummyjson.com/recipes/add",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify(recipeData),
+        }
+      );
+
+      const newRecipe = await res.json();
+
+      const maxId = Math.max(
+        ...recipesList.map(
+          (recipe) => recipe.id
+        )
+      );
+
+      const recipe: Recipe = {
+        id: maxId + 1,
+        name: newRecipe.name,
+        cuisine: newRecipe.cuisine ?? recipeData.cuisine,
+        prepTimeMinutes: newRecipe.prepTimeMinutes ?? recipeData.prepTimeMinutes,
+        cookTimeMinutes: newRecipe.cookTimeMinutes ?? recipeData.cookTimeMinutes,
+        image: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png",
+      };
+
+      setRecipesList([
+        ...recipesList,
+        recipe,
+      ]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateRecipe = async (
+    id: number,
+    recipeData: RecipeForm
+  ) => {
+    try {
+      const res = await fetch(
+        `https://dummyjson.com/recipes/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify(recipeData),
+        }
+      );
+
+      const updatedRecipe =
+        await res.json();
+
+      setRecipesList(
+        recipesList.map((recipe) =>
+          recipe.id === id
+            ? {
+                ...recipe,
+                name: updatedRecipe.name ?? recipeData.name,
+                cuisine: updatedRecipe.cuisine ?? recipeData.cuisine,
+                prepTimeMinutes: updatedRecipe.prepTimeMinutes ?? recipeData.prepTimeMinutes,
+                cookTimeMinutes: updatedRecipe.cookTimeMinutes ?? recipeData.cookTimeMinutes,
+              }
+            : recipe
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteRecipe = async (
+    id: number
+  ) => {
+    try {
+      await fetch(
+        `https://dummyjson.com/recipes/${id}`,
+        { method: "DELETE", }
+      );
+
+      setRecipesList(
+        recipesList.filter(
+          (recipe) => recipe.id !== id
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return { recipesList, getRecipes, addRecipe, updateRecipe, deleteRecipe,};
+};
