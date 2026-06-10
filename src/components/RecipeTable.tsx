@@ -9,7 +9,7 @@ import AddIcon from "@mui/icons-material/Add";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-
+import RecipeViewDialog from "./RecipeViewDialog.tsx";
 import RecipeDialog from "./RecipeDialog.tsx";
 import {
   type Recipe,
@@ -20,16 +20,20 @@ export default function RecipeTable() {
   const {
     recipesList,
     getRecipes,
+    getRecipeById,
     addRecipe,
     updateRecipe,
     deleteRecipe,
   } = useRecipesModal();
 
-  const [openDialog, setOpenDialog] =
-    useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
-  const [selectedRecipe, setSelectedRecipe] =
-    useState<Recipe | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+
+  const [openViewDialog, setOpenViewDialog] = useState(false);
+
+  const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
+
 
   useEffect(() => {
     getRecipes();
@@ -63,6 +67,16 @@ export default function RecipeTable() {
     }
   };
 
+  const handleViewClick = async (
+    id: number
+  ) => {
+    const recipe =
+      await getRecipeById(id);
+
+    setViewRecipe(recipe);
+    setOpenViewDialog(true);
+  };
+  
   const handleDeleteClick = async (
     id: number
   ) => {
@@ -145,12 +159,15 @@ return (
             </TableCell>
 
             <TableCell align="center">
-              <IconButton
-                sx={{
-                  bgcolor: "#eef3ff",
-                  mr: 1,
-                }}
-              >
+                <IconButton
+                  onClick={() =>
+                    handleViewClick(recipe.id)
+                  }
+                  sx={{
+                    bgcolor: "#eef3ff",
+                    mr: 1,
+                  }}
+                >
                 <VisibilityOutlinedIcon
                   sx={{
                     color: "#4f6ef7",
@@ -227,6 +244,15 @@ return (
     onSubmit={handleDialogSubmit}
     recipe={selectedRecipe}
   />
+
+  <RecipeViewDialog
+  open={openViewDialog}
+  onClose={() =>
+    setOpenViewDialog(false)
+  }
+  recipe={viewRecipe}
+/>
+
 </Box>
 );
 }
