@@ -7,6 +7,8 @@ export interface Recipe {
   prepTimeMinutes: number;
   cookTimeMinutes: number;
   image: string;
+  ingredients?: string[];
+  instructions?: string[];
 }
 
 interface RecipeForm {
@@ -133,15 +135,23 @@ export const useRecipesModal = () => {
         { method: "DELETE", }
       );
 
-      setRecipesList(
-        recipesList.filter(
-          (recipe) => recipe.id !== id
-        )
-      );
+      setRecipesList((prev) => prev.filter( 
+        (recipe) => recipe.id !== id));
+        
     } catch (error) {
       console.error(error);
     }
   };
 
-  return { recipesList, getRecipes, addRecipe, updateRecipe, deleteRecipe,};
+  const getRecipeById = async (
+    id: number
+  ) => {
+    const res = await fetch(
+      `https://dummyjson.com/recipes/${id}`
+    );
+
+    return await res.json();
+  };
+
+  return { recipesList, getRecipes, addRecipe, updateRecipe, deleteRecipe,getRecipeById,};
 };
