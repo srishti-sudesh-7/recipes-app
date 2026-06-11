@@ -15,38 +15,77 @@ interface RecipeDialogProps {
     prepTimeMinutes: number;
     cookTimeMinutes: number;
   }) => void;
-  recipe?: Recipe | null;
+  recipeProps?: Recipe | null;
 }
 
 export default function RecipeDialog({
   open,
   onClose,
   onSubmit,
-  recipe,
+  recipeProps,
 }: RecipeDialogProps) {
-  const [name, setName] = useState("");
-  const [cuisine, setCuisine] = useState("");
-  const [prepTimeMinutes, setPrepTimeMinutes] =
-    useState(0);
-  const [cookTimeMinutes, setCookTimeMinutes] =
-    useState(0);
+  const [formData, setFormData] = useState({
+    name: "",
+    cuisine: "",
+    prepTimeMinutes: 0,
+    cookTimeMinutes: 0,
+  });
+  const [errors, setErrors] = useState({
+    name: false,
+    cuisine: false,
+    prepTimeMinutes: false,
+    cookTimeMinutes: false,
+  });
 
   useEffect(() => {
-    if (recipe) {
-      setName(recipe.name);
-      setCuisine(recipe.cuisine);
-      setPrepTimeMinutes(recipe.prepTimeMinutes);
-      setCookTimeMinutes(recipe.cookTimeMinutes);
+    if (recipeProps) {
+      setFormData({
+        name: recipeProps.name,
+        cuisine: recipeProps.cuisine,
+        prepTimeMinutes: recipeProps.prepTimeMinutes,
+        cookTimeMinutes: recipeProps.cookTimeMinutes,
+      });
     } else {
-      setName("");
-      setCuisine("");
-      setPrepTimeMinutes(0);
-      setCookTimeMinutes(0);
+      setFormData({
+        name: "",
+        cuisine: "",
+        prepTimeMinutes: 0,
+        cookTimeMinutes: 0,
+      });
     }
-  }, [recipe, open]);
+
+    setErrors({
+      name: false,
+      cuisine: false,
+      prepTimeMinutes: false,
+      cookTimeMinutes: false,
+    });
+  }, [recipeProps, open]);
 
   const handleSubmit = () => {
-    onSubmit({ name, cuisine, prepTimeMinutes, cookTimeMinutes,});
+    const nextErrors = {
+      name: formData.name.trim() === "",
+      cuisine: formData.cuisine.trim() === "",
+      prepTimeMinutes: formData.prepTimeMinutes <= 0,
+      cookTimeMinutes: formData.cookTimeMinutes <= 0,
+    };
+
+    if (
+      nextErrors.name ||
+      nextErrors.cuisine ||
+      nextErrors.prepTimeMinutes ||
+      nextErrors.cookTimeMinutes
+    ) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    onSubmit({
+      name: formData.name.trim(),
+      cuisine: formData.cuisine.trim(),
+      prepTimeMinutes: formData.prepTimeMinutes,
+      cookTimeMinutes: formData.cookTimeMinutes,
+    });
     onClose();
   };
 
@@ -58,50 +97,66 @@ export default function RecipeDialog({
       maxWidth="sm"
     >
       <DialogTitle>
-        {recipe ? "Edit Recipe" : "Add Recipe"}
+        {recipeProps ? "Edit Recipe" : "Add Recipe"}
       </DialogTitle>
 
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
             label="Recipe Name"
-            value={name}
+            value={formData.name}
             onChange={(e) =>
-              setName(e.target.value)
+              setFormData({
+                ...formData,
+                name: e.target.value,
+              })
             }
+            error={errors.name}
+            helperText={errors.name ? "Recipe name is required" : ""}
             fullWidth
           />
 
           <TextField
             label="Cuisine"
-            value={cuisine}
+            value={formData.cuisine}
             onChange={(e) =>
-              setCuisine(e.target.value)
+              setFormData({
+                ...formData,
+                cuisine: e.target.value,
+              })
             }
+            error={errors.cuisine}
+            helperText={errors.cuisine ? "Cuisine is required" : ""}
             fullWidth
           />
 
           <TextField
             label="Prep Time (mins)"
             type="number"
-            value={prepTimeMinutes}
+            value={formData.prepTimeMinutes}
             onChange={(e) =>
-              setPrepTimeMinutes(
-                Number(e.target.value)
-              )
+              setFormData({
+                ...formData,
+                prepTimeMinutes: Number(e.target.value),
+              })
             }
+            error={errors.prepTimeMinutes}
+            helperText={errors.prepTimeMinutes ? "Enter a valid prep time" : ""}
             fullWidth
           />
 
           <TextField
             label="Cook Time (mins)"
             type="number"
-            value={cookTimeMinutes}
+            value={formData.cookTimeMinutes}
             onChange={(e) =>
-              setCookTimeMinutes(
-                Number(e.target.value)
-              )
+              setFormData({
+                ...formData,
+                cookTimeMinutes: Number(e.target.value),
+              })
             }
+            error={errors.cookTimeMinutes}
+            helperText={errors.cookTimeMinutes ? "Enter a valid cook time" : ""}
             fullWidth
           />
         </Stack>
@@ -116,7 +171,7 @@ export default function RecipeDialog({
           variant="contained"
           onClick={handleSubmit}
         >
-          {recipe ? "Update" : "Add"}
+          {recipeProps ? "Update" : "Add"}
         </Button>
       </DialogActions>
     </Dialog>

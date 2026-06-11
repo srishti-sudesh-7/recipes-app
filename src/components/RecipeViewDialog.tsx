@@ -8,15 +8,15 @@ import { type Recipe } from "../hooks/useRecipesModal";
 interface RecipeViewDialogProps {
   open: boolean;
   onClose: () => void;
-  recipe: Recipe | null;
+  recipeProps: Recipe | null;
 }
 
 export default function RecipeViewDialog({
   open,
   onClose,
-  recipe,
+  recipeProps,
 }: RecipeViewDialogProps) {
-  if (!recipe) return null;
+  if (!recipeProps) return null;
 
   return (
     <Dialog
@@ -25,7 +25,7 @@ export default function RecipeViewDialog({
       fullWidth
       maxWidth="md"
     >
-      <DialogTitle> {recipe.name} </DialogTitle>
+      <DialogTitle> {recipeProps.name} </DialogTitle>
 
       <DialogContent>
         <Typography
@@ -36,7 +36,7 @@ export default function RecipeViewDialog({
         </Typography>
 
         <List>
-          {recipe.ingredients?.map(
+          {recipeProps.ingredients?.map(
             (ingredient, index) => (
               <ListItem key={index}>
                 • {ingredient}
@@ -53,7 +53,7 @@ export default function RecipeViewDialog({
         </Typography>
 
         <List>
-          {recipe.instructions?.map(
+          {recipeProps.instructions?.map(
             (instruction, index) => (
               <ListItem key={index}>
                 {index + 1}. {instruction}

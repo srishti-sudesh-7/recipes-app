@@ -242,7 +242,7 @@ return (
       setOpenDialog(false)
     }
     onSubmit={handleDialogSubmit}
-    recipe={selectedRecipe}
+    recipeProps={selectedRecipe}
   />
 
   <RecipeViewDialog
@@ -250,7 +250,7 @@ return (
   onClose={() =>
     setOpenViewDialog(false)
   }
-  recipe={viewRecipe}
+  recipeProps={viewRecipe}
 />
 
 </Box>
