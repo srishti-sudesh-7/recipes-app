@@ -4,7 +4,11 @@ import {
 } from "@mui/material";
 
 import { useEffect, useState } from "react";
-import { type Recipe } from "../hooks/useRecipesModal";
+import { type RecipeProps } from "../hooks/useRecipesModal";
+
+interface FieldState {
+  value: string; error: string;
+}
 
 interface RecipeDialogProps {
   open: boolean;
@@ -15,8 +19,22 @@ interface RecipeDialogProps {
     prepTimeMinutes: number;
     cookTimeMinutes: number;
   }) => void;
-  recipeProps?: Recipe | null;
+  recipeProps?: RecipeProps | null;
 }
+
+interface RecipeFormFields {
+  name: FieldState;
+  cuisine: FieldState;
+  prepTimeMinutes: FieldState;
+  cookTimeMinutes: FieldState;
+}
+
+const emptyFields: RecipeFormFields = {
+  name:{ value: "", error: "" },
+  cuisine:{ value: "", error: "" },
+  prepTimeMinutes:{ value: "", error: "" },
+  cookTimeMinutes:{ value: "", error: "" },
+};
 
 export default function RecipeDialog({
   open,
@@ -24,67 +42,66 @@ export default function RecipeDialog({
   onSubmit,
   recipeProps,
 }: RecipeDialogProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    cuisine: "",
-    prepTimeMinutes: 0,
-    cookTimeMinutes: 0,
-  });
-  const [errors, setErrors] = useState({
-    name: false,
-    cuisine: false,
-    prepTimeMinutes: false,
-    cookTimeMinutes: false,
-  });
+
+    const [fields, setFields] = useState<RecipeFormFields>(emptyFields);
+
 
   useEffect(() => {
     if (recipeProps) {
-      setFormData({
-        name: recipeProps.name,
-        cuisine: recipeProps.cuisine,
-        prepTimeMinutes: recipeProps.prepTimeMinutes,
-        cookTimeMinutes: recipeProps.cookTimeMinutes,
+      setFields({
+        name: { value: recipeProps.name, error: "" },
+        cuisine: { value: recipeProps.cuisine, error: "" },
+        prepTimeMinutes: { value: String(recipeProps.prepTimeMinutes), error: "" },
+        cookTimeMinutes: { value: String(recipeProps.cookTimeMinutes), error: "" },
       });
     } else {
-      setFormData({
-        name: "",
-        cuisine: "",
-        prepTimeMinutes: 0,
-        cookTimeMinutes: 0,
-      });
+      setFields(emptyFields);
     }
-
-    setErrors({
-      name: false,
-      cuisine: false,
-      prepTimeMinutes: false,
-      cookTimeMinutes: false,
-    });
   }, [recipeProps, open]);
 
-  const handleSubmit = () => {
-    const nextErrors = {
-      name: formData.name.trim() === "",
-      cuisine: formData.cuisine.trim() === "",
-      prepTimeMinutes: formData.prepTimeMinutes <= 0,
-      cookTimeMinutes: formData.cookTimeMinutes <= 0,
+  const handleChange = (field: keyof RecipeFormFields, value: string) => {
+      setFields(prev => ({
+        ...prev,
+        [field]: { value, error: "" },
+      }));
     };
 
-    if (
-      nextErrors.name ||
-      nextErrors.cuisine ||
-      nextErrors.prepTimeMinutes ||
-      nextErrors.cookTimeMinutes
-    ) {
-      setErrors(nextErrors);
-      return;
+  const checkFields = (): boolean => {
+    const updated = { ...fields };
+    let hasError = false;
+
+    if (fields.name.value.trim() === "") {
+      updated.name = { ...updated.name, error: "Recipe name is required" };
+      hasError = true;
     }
 
+    if (fields.cuisine.value.trim() === "") {
+      updated.cuisine = { ...updated.cuisine, error: "Cuisine is required" };
+      hasError = true;
+    }
+
+    if (!fields.prepTimeMinutes.value || Number(fields.prepTimeMinutes.value) <= 0) {
+      updated.prepTimeMinutes = { ...updated.prepTimeMinutes, error: "Enter a valid prep time" };
+      hasError = true;
+    }
+
+    if (!fields.cookTimeMinutes.value || Number(fields.cookTimeMinutes.value) <= 0) {
+      updated.cookTimeMinutes = { ...updated.cookTimeMinutes, error: "Enter a valid cook time" };
+      hasError = true;
+    }
+
+    setFields(updated);
+    return hasError;
+  };
+
+  const handleSubmit = () => {
+    if (checkFields()) return;
+
     onSubmit({
-      name: formData.name.trim(),
-      cuisine: formData.cuisine.trim(),
-      prepTimeMinutes: formData.prepTimeMinutes,
-      cookTimeMinutes: formData.cookTimeMinutes,
+      name: fields.name.value.trim(),
+      cuisine: fields.cuisine.value.trim(),
+      prepTimeMinutes: Number(fields.prepTimeMinutes.value),
+      cookTimeMinutes: Number(fields.cookTimeMinutes.value),
     });
     onClose();
   };
@@ -104,73 +121,56 @@ export default function RecipeDialog({
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
             label="Recipe Name"
-            value={formData.name}
+            value={fields.name.value}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                name: e.target.value,
-              })
+              handleChange("name", e.target.value)
             }
-            error={errors.name}
-            helperText={errors.name ? "Recipe name is required" : ""}
+            error={!!fields.name.error}
+            helperText={fields.name.error}
             fullWidth
           />
 
           <TextField
             label="Cuisine"
-            value={formData.cuisine}
+            value={fields.cuisine.value}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                cuisine: e.target.value,
-              })
+              handleChange("cuisine", e.target.value)
             }
-            error={errors.cuisine}
-            helperText={errors.cuisine ? "Cuisine is required" : ""}
+            error={!!fields.cuisine.error}
+            helperText={fields.cuisine.error}
             fullWidth
           />
 
           <TextField
             label="Prep Time (mins)"
             type="number"
-            value={formData.prepTimeMinutes}
+            value={fields.prepTimeMinutes.value}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                prepTimeMinutes: Number(e.target.value),
-              })
+              handleChange("prepTimeMinutes", e.target.value)
             }
-            error={errors.prepTimeMinutes}
-            helperText={errors.prepTimeMinutes ? "Enter a valid prep time" : ""}
+            error={!!fields.prepTimeMinutes.error}
+            helperText={fields.prepTimeMinutes.error}
             fullWidth
           />
 
           <TextField
             label="Cook Time (mins)"
             type="number"
-            value={formData.cookTimeMinutes}
+            value={fields.cookTimeMinutes.value}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                cookTimeMinutes: Number(e.target.value),
-              })
+              handleChange("cookTimeMinutes", e.target.value)
             }
-            error={errors.cookTimeMinutes}
-            helperText={errors.cookTimeMinutes ? "Enter a valid cook time" : ""}
+            error={!!fields.cookTimeMinutes.error}
+            helperText={fields.cookTimeMinutes.error}
             fullWidth
           />
         </Stack>
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>
-          Cancel
-        </Button>
+        <Button onClick={onClose}>Cancel </Button>
 
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-        >
+        <Button variant="contained" onClick={handleSubmit}>
           {recipeProps ? "Update" : "Add"}
         </Button>
       </DialogActions>
