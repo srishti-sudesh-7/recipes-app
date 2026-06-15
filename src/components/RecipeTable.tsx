@@ -12,28 +12,28 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import RecipeViewDialog from "./RecipeViewDialog.tsx";
 import RecipeDialog from "./RecipeDialog.tsx";
 import {
-  type Recipe,
+  type RecipeProps,
   useRecipesModal,
 } from "../hooks/useRecipesModal";
 
+import { useDispatch,useSelector } from "react-redux";
+import type {RootState,} from "../redux/store";
+import { setSelectedRecipe} from "../redux/recipesSlice.ts";
+import { openEditDialog, closeEditDialog} from "../redux/editDialogSlice.ts";
+
+
 export default function RecipeTable() {
+
+const dispatch = useDispatch();
   const {
-    recipesList,
-    getRecipes,
-    getRecipeById,
-    addRecipe,
-    updateRecipe,
-    deleteRecipe,
+    recipesList, getRecipes, getRecipeById, addRecipe, updateRecipe, deleteRecipe,
   } = useRecipesModal();
 
   const [openDialog, setOpenDialog] = useState(false);
-
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-
+  //const [selectedRecipe, setSelectedRecipe] = useState<RecipeProps | null>(null);
   const [openViewDialog, setOpenViewDialog] = useState(false);
-
-  const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
-
+  const [viewRecipe, setViewRecipe] = useState<RecipeProps | null>(null);
+  const selectedRecipe = useSelector((state: RootState) => state.recipes.selectedRecipe);
 
   useEffect(() => {
     getRecipes();
@@ -44,10 +44,11 @@ export default function RecipeTable() {
     setOpenDialog(true);
   };
 
-  const handleEditClick = (recipe: Recipe) => {
-    setSelectedRecipe(recipe);
-    setOpenDialog(true);
-  };
+  const handleEditClick = (recipe: RecipeProps) => {
+  dispatch(setSelectedRecipe(recipe));
+  setOpenDialog(true);
+  dispatch(openEditDialog());
+};
 
   const handleDialogSubmit = async (
     data: {
@@ -58,11 +59,17 @@ export default function RecipeTable() {
     }
   ) => {
     if (selectedRecipe) {
-      await updateRecipe(
-        selectedRecipe.id,
-        data
-      );
-    } else {
+    await fetch(`https://dummyjson.com/recipes/${selectedRecipe.id}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type":  "application/json",
+      },
+      body:JSON.stringify(data),
+    }
+  );
+  await updateRecipe( selectedRecipe.id, data);
+  }
+  else {
       await addRecipe(data);
     }
   };
@@ -238,8 +245,10 @@ return (
 
   <RecipeDialog
     open={openDialog}
-    onClose={() =>
-      setOpenDialog(false)
+    onClose={() =>{
+      setOpenDialog(false);
+      dispatch(closeEditDialog());
+    }
     }
     onSubmit={handleDialogSubmit}
     recipeProps={selectedRecipe}

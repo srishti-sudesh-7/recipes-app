@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export interface Recipe {
+export interface RecipeProps {
   id: number;
   name: string;
   cuisine: string;
@@ -19,7 +19,7 @@ interface RecipeForm {
 }
 
 export const useRecipesModal = () => {
-  const [recipesList, setRecipesList] = useState<Recipe[]>([]);
+  const [recipesList, setRecipesList] = useState<RecipeProps[]>([]);
 
   const getRecipes = async () => {
     try {
@@ -29,7 +29,7 @@ export const useRecipesModal = () => {
 
       const data = await res.json();
 
-      const recipes: Recipe[] = data.recipes.map(
+      const recipes: RecipeProps[] = data.recipes.map(
         (recipe: any) => ({
           id: recipe.id,
           name: recipe.name,
@@ -70,12 +70,12 @@ export const useRecipesModal = () => {
         )
       );
 
-      const recipe: Recipe = {
+      const recipe: RecipeProps = {
         id: maxId + 1,
         name: newRecipe.name,
-        cuisine: newRecipe.cuisine ?? recipeData.cuisine,
-        prepTimeMinutes: newRecipe.prepTimeMinutes ?? recipeData.prepTimeMinutes,
-        cookTimeMinutes: newRecipe.cookTimeMinutes ?? recipeData.cookTimeMinutes,
+        cuisine: newRecipe.cuisine,
+        prepTimeMinutes: newRecipe.prepTimeMinutes,
+        cookTimeMinutes: newRecipe.cookTimeMinutes,
         image: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png",
       };
 
@@ -113,10 +113,10 @@ export const useRecipesModal = () => {
           recipe.id === id
             ? {
                 ...recipe,
-                name: updatedRecipe.name ?? recipeData.name,
-                cuisine: updatedRecipe.cuisine ?? recipeData.cuisine,
-                prepTimeMinutes: updatedRecipe.prepTimeMinutes ?? recipeData.prepTimeMinutes,
-                cookTimeMinutes: updatedRecipe.cookTimeMinutes ?? recipeData.cookTimeMinutes,
+                name: updatedRecipe.name,
+                cuisine: updatedRecipe.cuisine,
+                prepTimeMinutes: updatedRecipe.prepTimeMinutes,
+                cookTimeMinutes: updatedRecipe.cookTimeMinutes,
               }
             : recipe
         )
@@ -126,18 +126,15 @@ export const useRecipesModal = () => {
     }
   };
 
-  const deleteRecipe = async (
-    id: number
-  ) => {
+  const deleteRecipe = async (id:number) => {
     try {
       await fetch(
         `https://dummyjson.com/recipes/${id}`,
         { method: "DELETE", }
       );
 
-      setRecipesList((prev) => prev.filter( 
-        (recipe) => recipe.id !== id));
-        
+      setRecipesList((prev) => 
+        prev.filter((recipe) => recipe.id !== id));
     } catch (error) {
       console.error(error);
     }

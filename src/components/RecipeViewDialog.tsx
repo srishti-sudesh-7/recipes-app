@@ -3,12 +3,12 @@ import {
 Typography, List, ListItem, Button, DialogActions,
 } from "@mui/material";
 
-import { type Recipe } from "../hooks/useRecipesModal";
+import { type RecipeProps } from "../hooks/useRecipesModal";
 
 interface RecipeViewDialogProps {
   open: boolean;
   onClose: () => void;
-  recipeProps: Recipe | null;
+  recipeProps: RecipeProps | null;
 }
 
 export default function RecipeViewDialog({
