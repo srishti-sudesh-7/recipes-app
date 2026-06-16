@@ -18,15 +18,14 @@ const recipeSlice = createSlice({
   name: "recipe",
   initialState,
   reducers: {
-    openEditDialog: (state) => { state.open = true; },
-    closeEditDialog: (state) => { state.open = false; },
-    setSelectedRecipe: (
-      state,
-      action: PayloadAction<RecipeProps | null>
-    ) => { state.selectedRecipe = action.payload;},
+    openEditDialog: (state, action: PayloadAction<RecipeProps | null>) => 
+      { state.open = true; 
+        state.selectedRecipe = action.payload;
+      },
+    closeEditDialog: (state,) => { state.open = false; state.selectedRecipe = null;},
   },
 });
 
-export const {openEditDialog, closeEditDialog, setSelectedRecipe,} = recipeSlice.actions;
+export const {openEditDialog, closeEditDialog,} = recipeSlice.actions;
 
 export default recipeSlice.reducer;
