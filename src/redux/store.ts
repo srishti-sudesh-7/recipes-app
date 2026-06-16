@@ -1,22 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import editDialogReducer from "./editDialogSlice";
-import recipesReducer from "./recipesSlice";
+
+import recipeReducer from "./recipeSlice.ts";
 
 export const store =
   configureStore({
-    reducer: {
-      editDialog:
-        editDialogReducer,
-
-      recipes:
-        recipesReducer,
-    },
+    reducer: { recipe: recipeReducer,},
   });
 
-export type RootState =
-  ReturnType<
-    typeof store.getState
-  >;
+export type RootState = ReturnType< typeof store.getState>;
 
-export type AppDispatch =
-  typeof store.dispatch;
+export type AppDispatch = typeof store.dispatch;

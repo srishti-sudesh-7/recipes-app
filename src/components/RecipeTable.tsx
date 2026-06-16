@@ -18,8 +18,7 @@ import {
 
 import { useDispatch,useSelector } from "react-redux";
 import type {RootState,} from "../redux/store";
-import { setSelectedRecipe} from "../redux/recipesSlice.ts";
-import { openEditDialog, closeEditDialog} from "../redux/editDialogSlice.ts";
+import { openEditDialog, closeEditDialog, setSelectedRecipe} from "../redux/recipeSlice.ts";
 
 
 export default function RecipeTable() {
@@ -29,26 +28,26 @@ const dispatch = useDispatch();
     recipesList, getRecipes, getRecipeById, addRecipe, updateRecipe, deleteRecipe,
   } = useRecipesModal();
 
-  const [openDialog, setOpenDialog] = useState(false);
+  //const [openDialog, setOpenDialog] = useState(false);
   //const [selectedRecipe, setSelectedRecipe] = useState<RecipeProps | null>(null);
   const [openViewDialog, setOpenViewDialog] = useState(false);
   const [viewRecipe, setViewRecipe] = useState<RecipeProps | null>(null);
-  const selectedRecipe = useSelector((state: RootState) => state.recipes.selectedRecipe);
+  const selectedRecipe = useSelector((state: RootState) => state.recipe.selectedRecipe);
+  const isDialogOpen = useSelector((state: RootState) => state.recipe.open);
 
   useEffect(() => {
     getRecipes();
   }, []);
 
   const handleAddClick = () => {
-    setSelectedRecipe(null);
-    setOpenDialog(true);
+    dispatch(setSelectedRecipe(null));
+    dispatch(openEditDialog());
   };
 
   const handleEditClick = (recipe: RecipeProps) => {
-  dispatch(setSelectedRecipe(recipe));
-  setOpenDialog(true);
-  dispatch(openEditDialog());
-};
+    dispatch(setSelectedRecipe(recipe));
+    dispatch(openEditDialog());
+  };
 
   const handleDialogSubmit = async (
     data: {
@@ -58,20 +57,8 @@ const dispatch = useDispatch();
       cookTimeMinutes: number;
     }
   ) => {
-    if (selectedRecipe) {
-    await fetch(`https://dummyjson.com/recipes/${selectedRecipe.id}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type":  "application/json",
-      },
-      body:JSON.stringify(data),
-    }
-  );
-  await updateRecipe( selectedRecipe.id, data);
-  }
-  else {
-      await addRecipe(data);
-    }
+    if (selectedRecipe) await updateRecipe(selectedRecipe.id, data);
+    else await addRecipe(data);
   };
 
   const handleViewClick = async (
@@ -244,12 +231,8 @@ return (
   </TableContainer>
 
   <RecipeDialog
-    open={openDialog}
-    onClose={() =>{
-      setOpenDialog(false);
-      dispatch(closeEditDialog());
-    }
-    }
+    open={isDialogOpen}
+    onClose={() => dispatch(closeEditDialog())}
     onSubmit={handleDialogSubmit}
     recipeProps={selectedRecipe}
   />
