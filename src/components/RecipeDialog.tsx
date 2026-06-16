@@ -119,51 +119,23 @@ export default function RecipeDialog({
 
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label="Recipe Name"
-            value={fields.name.value}
-            onChange={(e) =>
-              handleChange("name", e.target.value)
-            }
-            error={!!fields.name.error}
-            helperText={fields.name.error}
-            fullWidth
-          />
-
-          <TextField
-            label="Cuisine"
-            value={fields.cuisine.value}
-            onChange={(e) =>
-              handleChange("cuisine", e.target.value)
-            }
-            error={!!fields.cuisine.error}
-            helperText={fields.cuisine.error}
-            fullWidth
-          />
-
-          <TextField
-            label="Prep Time (mins)"
-            type="number"
-            value={fields.prepTimeMinutes.value}
-            onChange={(e) =>
-              handleChange("prepTimeMinutes", e.target.value)
-            }
-            error={!!fields.prepTimeMinutes.error}
-            helperText={fields.prepTimeMinutes.error}
-            fullWidth
-          />
-
-          <TextField
-            label="Cook Time (mins)"
-            type="number"
-            value={fields.cookTimeMinutes.value}
-            onChange={(e) =>
-              handleChange("cookTimeMinutes", e.target.value)
-            }
-            error={!!fields.cookTimeMinutes.error}
-            helperText={fields.cookTimeMinutes.error}
-            fullWidth
-          />
+          {[
+            { key: "name", label: "Recipe Name", type: "text" },
+            {key: "cuisine", label: "Cuisine", type: "text" },
+            { key: "prepTimeMinutes", label: "Prep Time (mins)", type: "number" },
+            {key: "cookTimeMinutes", label: "Cook Time (mins)", type: "number" },
+          ].map(({ key, label, type }) => (
+            <TextField
+              key={key}
+              label={label}
+              type={type}
+              value={fields[key as keyof RecipeFormFields].value}
+              onChange={(e) => handleChange(key as keyof RecipeFormFields, e.target.value)}
+              error={!!fields[key as keyof RecipeFormFields].error}
+              helperText={fields[key as keyof RecipeFormFields].error}
+              fullWidth
+            />
+          ))}
         </Stack>
       </DialogContent>
 

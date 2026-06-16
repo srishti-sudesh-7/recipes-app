@@ -18,7 +18,7 @@ import {
 
 import { useDispatch,useSelector } from "react-redux";
 import type {RootState,} from "../redux/store";
-import { openEditDialog, closeEditDialog, setSelectedRecipe} from "../redux/recipeSlice.ts";
+import { openEditDialog, closeEditDialog} from "../redux/recipeSlice.ts";
 
 
 export default function RecipeTable() {
@@ -40,13 +40,13 @@ const dispatch = useDispatch();
   }, []);
 
   const handleAddClick = () => {
-    dispatch(setSelectedRecipe(null));
-    dispatch(openEditDialog());
+    //dispatch(setSelectedRecipe(null));
+    dispatch(openEditDialog(null));
   };
 
   const handleEditClick = (recipe: RecipeProps) => {
-    dispatch(setSelectedRecipe(recipe));
-    dispatch(openEditDialog());
+    //dispatch(setSelectedRecipe(recipe));
+    dispatch(openEditDialog(recipe));
   };
 
   const handleDialogSubmit = async (
